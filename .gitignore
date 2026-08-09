@@ -1,0 +1,12 @@
+.env
+text.py
+downloads/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+.pytest_cache/
+.DS_Store
