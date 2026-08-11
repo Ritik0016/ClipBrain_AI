@@ -21,6 +21,29 @@ def download_youtube_audio(url:str)->str:
         ],
         "quiet": True,
         "no_warnings": True,
+        # ── Anti-403 measures for cloud deployments ──────────────────────
+        "http_headers": {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/125.0.0.0 Safari/537.36"
+            ),
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Referer": "https://www.youtube.com/",
+        },
+        "extractor_args": {
+            "youtube": {
+                # Use the web client (not the TV/embedded client) — avoids
+                # the po_token check that triggers 403 on server IPs.
+                "player_client": ["web", "android"],
+                "player_skip": ["webpage", "config"],
+            }
+        },
+        "retries": 5,
+        "fragment_retries": 5,
+        "sleep_interval": 2,
+        "max_sleep_interval": 6,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
