@@ -22,6 +22,7 @@ def get_llm():
     return model
 
 def split_transcript(transcript: str) -> list:
+    print("splitting transcript into chunks.")
     splitter = RecursiveCharacterTextSplitter(
         chunk_size = 3000, 
         chunk_overlap = 300
@@ -30,8 +31,9 @@ def split_transcript(transcript: str) -> list:
     return splitter.split_text(transcript)
 
 def chunks_summarizer(transcript:str)->str:
-    
     chunks = split_transcript(transcript)
+
+    print("Generating summary of each chunks independently.")
 
     chunk_summarize_prompt = ChatPromptTemplate.from_messages([
         ("system", "Summarize this portion of a video transcript concisely."),
@@ -46,13 +48,17 @@ def chunks_summarizer(transcript:str)->str:
     for chunk in chunks:
         chunks_summary.append(chunk_summarize_pipeline.invoke(chunk))
     
+    print("Joining the list of 'chunk of summaries'")
     summary = "\n\n".join(chunks_summary)
 
     return summary
 
 
 def final_summary(transcript:str)->str:
+    
     summary = chunks_summarizer(transcript)
+
+    print("\n\nGenerating Final summmary.")
 
     summaries_summarize_prompt = ChatPromptTemplate.from_messages([
          (
@@ -68,12 +74,13 @@ def final_summary(transcript:str)->str:
     final_pipeline = RunnableLambda(lambda x: {"summary": x}) | summaries_summarize_prompt | model | StrOutputParser()
 
     result = final_pipeline.invoke(summary)
-
+    # print(f"FINAL SUMMARY: {result[:3000]}")
     return result
 
 
 
 def generate_title(transcript: str) ->str:
+    print("Generating Title.")
 
     title_prompt = ChatPromptTemplate.from_messages([
         ("system", "Based on the meeting transcript, generate a short professional meeting title (max 8 words). Only return the title, nothing else."),
@@ -85,5 +92,5 @@ def generate_title(transcript: str) ->str:
     title_pipeline = RunnableLambda(lambda x: {"text" : x}) | title_prompt | model | StrOutputParser()
 
     title = title_pipeline.invoke(transcript[:2000])
-
+    # print(f"TITLE: {title}")
     return title.strip()

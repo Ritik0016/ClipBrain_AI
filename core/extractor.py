@@ -22,6 +22,7 @@ def build_chain(system_prompt : str):
     )
 
 def extract_action_items(transcript:str)->str:
+    print("\n Extracting actionable items.")
     chain = build_chain(
          "You are an expert meeting analyst. From the meeting transcript, "
         "extract all action items. For each provide:\n"
@@ -35,6 +36,7 @@ def extract_action_items(transcript:str)->str:
 
 
 def extract_key_decisions(transcript: str) -> str:
+    print("\n extracting key decisions.")
     chain = build_chain(
         "You are an expert meeting analyst. From the meeting transcript, "
         "extract all key decisions made. Format as a numbered list. "
@@ -44,6 +46,7 @@ def extract_key_decisions(transcript: str) -> str:
 
 
 def extract_questions(transcript: str) -> str:
+    print("\n extracting open questions.")
     chain = build_chain(
         "From the meeting transcript, extract all unresolved questions "
         "or topics needing follow-up. Format as a numbered list. "

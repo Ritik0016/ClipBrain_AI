@@ -8,6 +8,7 @@ DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok = True)
 
 def download_youtube_audio(url:str)->str:
+    print("=======================downloading audio from video===========================")
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
@@ -38,6 +39,7 @@ def download_youtube_audio(url:str)->str:
 
 def convert_to_wav(input_path: str) -> str:
     """Convert any audio/video file to WAV format using pydub."""
+    print("\n====================converting downloaded audio into WAV format=========================")
     base, _ = os.path.splitext(input_path)
     output_path = f"{base}.wav"
 
@@ -52,7 +54,7 @@ def convert_to_wav(input_path: str) -> str:
 
 
 def chunk_audio(input_path: str, chunk_minutes: float ) -> list[str]:
-
+    print("\n========================Creating audio chunks....===================================")
     audio = AudioSegment.from_file(input_path)
 
     chunk_ms = int(chunk_minutes * 60 * 1000)
@@ -75,10 +77,11 @@ def chunk_audio(input_path: str, chunk_minutes: float ) -> list[str]:
 # result_chunks = chunk_audio(result_wav)
 # print(result_chunks)
 
-def process_input(url: str, chunk_minutes: float =10) -> list[str]:
+def process_input(url: str, chunk_minutes: float =3) -> list[str]:
     result = download_youtube_audio(url)
     result_wav = convert_to_wav(result)
     result_chunks = chunk_audio(result_wav, chunk_minutes)
+    # print(f"\n\nCHUNK AUDIO: {result_chunks}")
     return result_chunks
 
 

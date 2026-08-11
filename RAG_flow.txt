@@ -1,0 +1,56 @@
+Question
+   ↓
+Retriever
+   ↓
+Relevant Documents
+   ↓
+RunnableLambda(format_docs)
+   ↓
+Context
+   ↓
+Prompt
+   ↓
+Mistral
+   ↓
+StrOutputParser
+   ↓
+Answer
+
+
+
+                         USER QUESTION
+                               │
+                               ▼
+                 ┌─────────────────────────┐
+                 │       LCEL INPUT        │
+                 └────────────┬────────────┘
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+                ▼                           ▼
+           RETRIEVER                RunnablePassthrough
+                │                           │
+                ▼                           │
+       Relevant Documents                   │
+                │                           │
+                ▼                           │
+      RunnableLambda(                       │
+          format_docs                       │
+      )                                     │
+                │                           │
+                ▼                           ▼
+           "context"                   "question"
+                │                           │
+                └─────────────┬─────────────┘
+                              │
+                              ▼
+                    ChatPromptTemplate
+                              │
+                              ▼
+                         ChatMistralAI
+                              │
+                              ▼
+                      StrOutputParser
+                              │
+                              ▼
+                         FINAL ANSWER
