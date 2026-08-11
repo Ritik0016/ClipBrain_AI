@@ -7,55 +7,67 @@ from pydub import AudioSegment
 DOWNLOAD_DIR = "downloads"
 os.makedirs(DOWNLOAD_DIR, exist_ok = True)
 
-def download_youtube_audio(url:str)->str:
+def download_youtube_audio(url: str) -> str:
     print("=======================downloading audio from video===========================")
-    ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192",
+    
+    client_configs = [
+        ["android"],
+        ["ios"],
+        ["mweb"],
+        ["tv_embedded"],
+        ["web", "android"]
+    ]
+    
+    last_exception = None
+
+    for client in client_configs:
+        try:
+            ydl_opts = {
+                "format": "bestaudio/best",
+                "outtmpl": os.path.join(DOWNLOAD_DIR, "%(id)s.%(ext)s"),
+                "postprocessors": [
+                    {
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": "mp3",
+                        "preferredquality": "192",
+                    }
+                ],
+                "quiet": True,
+                "no_warnings": True,
+                "nocheckcertificate": True,
+                "geo_bypass": True,
+                "http_headers": {
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/128.0.0.0 Safari/537.36"
+                    ),
+                    "Accept-Language": "en-US,en;q=0.9",
+                    "Accept": "*/*",
+                },
+                "extractor_args": {
+                    "youtube": {
+                        "player_client": client,
+                    }
+                },
+                "retries": 5,
+                "fragment_retries": 5,
             }
-        ],
-        "quiet": True,
-        "no_warnings": True,
-        # ── Anti-403 measures for cloud deployments ──────────────────────
-        "http_headers": {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/125.0.0.0 Safari/537.36"
-            ),
-            "Accept-Language": "en-US,en;q=0.9",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Referer": "https://www.youtube.com/",
-        },
-        "extractor_args": {
-            "youtube": {
-                # Use the web client (not the TV/embedded client) — avoids
-                # the po_token check that triggers 403 on server IPs.
-                "player_client": ["web", "android"],
-                "player_skip": ["webpage", "config"],
-            }
-        },
-        "retries": 5,
-        "fragment_retries": 5,
-        "sleep_interval": 2,
-        "max_sleep_interval": 6,
-    }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        video_id = info["id"]
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                video_id = info["id"]
 
-    output_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
+            output_path = os.path.join(DOWNLOAD_DIR, f"{video_id}.mp3")
+            if os.path.exists(output_path):
+                return os.path.abspath(output_path)
+        except Exception as e:
+            print(f"Download attempt with player_client={client} failed: {e}")
+            last_exception = e
 
-    if not os.path.exists(output_path):
-        raise FileNotFoundError(f"Expected output file not found: {output_path}")
-
-    return os.path.abspath(output_path)
+    if last_exception:
+        raise last_exception
+    raise RuntimeError("Failed to download video audio with all player clients.")
 
 # result = download_youtube_audio("https://youtu.be/7AW6ORQLWvU?si=lZWL3FeAXNKqK6SR")
 # print(result)
